@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVSN Membership & Class Analytics Infographic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #E2E8F0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94A3B8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563EB;
+        }
+        .card-light {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-custom {
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-16 bg-slate-50 text-slate-900">
+
+    <!-- Floating Toast Notification -->
+    <div id="syncToast" class="fixed top-20 right-6 z-50 transform translate-y-[-150%] opacity-0 transition-all duration-300 ease-out bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700">
+        <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span id="syncToastMessage" class="text-xs font-medium tracking-wide">Calendar synced successfully.</span>
+    </div>
+
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="inline-block w-3 h-3 rounded-full bg-blue-600 animate-pulse"></span>
+                <span class="text-xl font-bold tracking-wider text-slate-900">DVSN <span class="text-blue-600">ANALYTICS</span></span>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+                <a href="#overview" class="hover:text-blue-600 transition-colors">Overview</a>
+                <a href="#payments" class="hover:text-blue-600 transition-colors">Payment Projection</a>
+                <a href="#disciplines" class="hover:text-blue-600 transition-colors">Disciplines</a>
+                <a href="#timeline" class="hover:text-blue-600 transition-colors">Billing Roadmap</a>
+                <a href="#ledger" class="hover:text-blue-600 transition-colors">Session Log</a>
+            </nav>
+            <div class="flex items-center space-x-3">
+                <!-- Header Sync Button -->
+                <button id="headerSyncBtn" onclick="triggerCalendarSync()" class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg shadow-sm cursor-pointer">
+                    <svg id="headerSyncIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span id="headerSyncText">Sync Calendar</span>
+                </button>
+                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                    PAUSE SCHEDULED (23 SEP)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-12">
+
+        <section id="overview" class="space-y-6">
+            <div class="card-light rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700 rounded-md border border-blue-200">
+                                Active Membership • Cycle 2 Active
+                            </span>
+                            <span id="lastSyncedLabel" class="text-slate-500 text-xs">Updated: 10 Sep 2026</span>
+                        </div>
+                        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                            DVSN Performance & Value Tracker
+                        </h1>
+                        <p class="text-slate-600 text-sm sm:text-base max-w-2xl mt-1">
+                            A live financial ledger and attendance dashboard tracking Wednesday-based weekly billing cycles, travel freezes, and workout schedule analytics.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <!-- Hero Section Sync Button -->
+                        <button onclick="triggerCalendarSync()" class="inline-flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer">
+                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Sync Latest Calendar Activity</span>
+                        </button>
+
+                        <div class="flex flex-wrap lg:flex-nowrap gap-3 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+                            <div class="px-3 py-1.5 text-center">
+                                <div class="text-[11px] text-slate-500 uppercase font-medium">Billing Cycle</div>
+                                <div class="text-xs font-bold text-slate-900">Wed – Tue</div>
+                            </div>
+                            <div class="w-px bg-slate-300"></div>
+                            <div class="px-3 py-1.5 text-center">
+                                <div class="text-[11px] text-slate-500 uppercase font-medium">Weekly Rate</div>
+                                <div class="text-xs font-bold text-blue-600">SGD 67.50</div>
+                            </div>
+                            <div class="w-px bg-slate-300"></div>
+                            <div class="px-3 py-1.5 text-center">
+                                <div class="text-[11px] text-slate-500 uppercase font-medium">Adjusted Expiry</div>
+                                <div class="text-xs font-bold text-emerald-600">23 Mar 2027</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+                    <div class="bg-blue-50/60 rounded-xl p-5 border border-blue-100">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Paid To Date</span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpiTotalPaid" class="text-3xl font-extrabold text-slate-900">SGD 234.00</span>
+                            <span class="text-xs text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded">2 Cycles + Trial</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-2">
+                            Main term: <strong class="text-slate-900">SGD 135.00</strong> (Sep 2 & 9) | Trial: <strong class="text-slate-900">SGD 99.00</strong>
+                        </p>
+                    </div>
+
+                    <div class="bg-cyan-50/60 rounded-xl p-5 border border-cyan-100">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completed Sessions</span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpiCompletedClasses" class="text-3xl font-extrabold text-cyan-800">21 <span class="text-lg text-slate-500 font-normal">/ 24</span></span>
+                            <span id="kpiBookedBadge" class="text-xs text-blue-700 font-semibold bg-blue-100 px-2 py-0.5 rounded">+3 Booked</span>
+                        </div>
+                        <p id="kpiCompletedSubtext" class="text-xs text-slate-600 mt-2">
+                            Trial: 8 classes | Main Term: 13 completed
+                        </p>
+                    </div>
+
+                    <div class="bg-emerald-50/60 rounded-xl p-5 border border-emerald-100">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Cost / Session</span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpiCostPerSession" class="text-3xl font-extrabold text-slate-900">SGD 11.14</span>
+                            <span class="text-xs text-emerald-700 font-semibold bg-emerald-100 px-2 py-0.5 rounded">Combined Live</span>
+                        </div>
+                        <p id="kpiCostSubtext" class="text-xs text-slate-600 mt-2">
+                            SGD 234 total ÷ 21 completed | Main term alone: <strong class="text-slate-900">SGD 10.38</strong>
+                        </p>
+                    </div>
+
+                    <div class="bg-emerald-50/60 rounded-xl p-5 border border-emerald-200">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Weekly Attendance Pace</span>
+                        </div>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span class="text-3xl font-extrabold text-emerald-700">4.0</span>
+                            <span class="text-xs text-slate-500">sessions / wk</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-2">
+                            On track for 112 contract sessions across 28 active weeks
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="payments" class="space-y-6">
+            <div class="border-l-4 border-blue-600 pl-4">
+                <h2 class="text-2xl font-bold text-slate-900">Payment Status & Future Projection</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    Tracking payments completed to date against upcoming Wednesday billing cycles across your 26-week contract (ending March 2027).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card-light rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-900">Contract Payment Breakdown</h3>
+                            <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">Chart.js Donut</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mb-6">
+                            Settled funds (Main Term Cycles 1 & 2 + June Trial) vs. remaining balance billed across 24 future weekly deductions.
+                        </p>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="paymentBreakdownChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
+                        <span><strong>SGD 135.00 paid</strong> (2 of 26 main cycles). Remaining balance across 24 cycles: <strong>SGD 1,620.00</strong>.</span>
+                    </div>
+                </div>
+
+                <div class="card-light rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-900">Monthly Cash Outlay Trajectory</h3>
+                            <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">Chart.js Bar</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mb-6">
+                            Monthly payment trajectory from June 2026 Trial through March 2027 expiry, incorporating the 3-week travel pause in Sep/Oct.
+                        </p>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="paymentTrajectoryChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
+                        <span>September total will reach $202.50 (3 deductions: Sep 2, 9, 16) before billing pauses on Sep 23.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-light rounded-2xl p-6 bg-gradient-to-r from-blue-50/60 via-slate-50 to-emerald-50/40">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="space-y-2 max-w-xl">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="text-lg font-bold text-slate-900">Interactive Attendance Pace Calculator</h3>
+                        </div>
+                        <p class="text-xs text-slate-600">
+                            Adjust your weekly workout frequency slider below to recalculate terminal cost per class and overall contract savings across 28 active weeks.
+                        </p>
+                    </div>
+
+                    <div class="flex-1 max-w-xs space-y-2">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span class="text-slate-600">Weekly Target Pace:</span>
+                            <span id="paceValue" class="text-blue-600 font-bold text-sm">4.0 classes/wk</span>
+                        </div>
+                        <input type="range" id="paceSlider" min="2" max="6" step="0.5" value="4.0" class="w-full accent-blue-600 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>2/wk (Casual)</span>
+                            <span>4/wk (Current)</span>
+                            <span>6/wk (Elite)</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-slate-200 text-center min-w-[240px] shadow-sm">
+                        <div>
+                            <div class="text-[11px] text-slate-500 uppercase font-medium">Terminal Cost/Class</div>
+                            <div id="simCost" class="text-xl font-bold text-cyan-700">SGD 15.67</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] text-slate-500 uppercase font-medium">Total Net Savings</div>
+                            <div id="simSavings" class="text-xl font-bold text-emerald-600">SGD 2,725</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="disciplines" class="space-y-6">
+            <div class="border-l-4 border-cyan-600 pl-4">
+                <h2 class="text-2xl font-bold text-slate-900">Fitness Disciplines & Schedule Intelligence</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    Understanding training load distribution across strength focus areas, anaerobic conditioning, team workouts (Coalition), and specialized Hyrox race prep.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card-light rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-900">Training Discipline Breakdown (<span id="disciplineTotalLabel">24</span> Sessions)</h3>
+                            <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">Chart.js Donut</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mb-4">
+                            Distribution across all registered sessions. Strength training forms the core foundation, complemented by conditioning and functional race preparation.
+                        </p>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="disciplineChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs" id="disciplineLegendContainer">
+                        <!-- Generated Dynamically -->
+                    </div>
+                </div>
+
+                <div class="card-light rounded-2xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold text-slate-900">Attendance Frequency by Day of Week</h3>
+                            <span class="text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">Chart.js Bar</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mb-4">
+                            Historical booking distribution highlighting workout consistency across weekly days.
+                        </p>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="dayScheduleChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
+                        <span id="eveningStatLabel">6:40 PM evening classes represent <strong>50.0% (12 sessions)</strong> of total bookings.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                    <div class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Strength Breakdown</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1"><span id="strengthTotalCount">11</span> Total Sessions</div>
+                    <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                        <li>• Full Body Strength: <strong class="text-slate-800">3</strong></li>
+                        <li>• Lower Body (Deadlift): <strong class="text-slate-800">3</strong></li>
+                        <li>• Upper Body (Vertical): <strong class="text-slate-800">2</strong></li>
+                        <li>• Upper Body (Horizontal): <strong class="text-slate-800">2</strong></li>
+                        <li>• Lower Body (Squat): <strong class="text-slate-800">1</strong></li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                    <div class="text-xs text-cyan-600 font-semibold uppercase tracking-wider">Conditioning & Hybrid</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1"><span id="condHybridTotalCount">8</span> Total Sessions</div>
+                    <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                        <li>• Conditioning (Anaerobic): <strong class="text-slate-800" id="subAnaerobicCount">5</strong></li>
+                        <li>• Hybrid Strength & Cond: <strong class="text-slate-800" id="subHybridCount">3</strong></li>
+                        <li class="text-slate-400 pt-1">High intensity cardio and engine building sessions.</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                    <div class="text-xs text-amber-600 font-semibold uppercase tracking-wider">Team & Specialty</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1"><span id="teamTotalCount">5</span> Total Sessions</div>
+                    <ul class="text-xs text-slate-600 mt-2 space-y-1">
+                        <li>• Coalition (Saturday Team): <strong class="text-slate-800" id="subCoalitionCount">4</strong></li>
+                        <li>• Hyrox Race Prep: <strong class="text-slate-800" id="subHyroxCount">1</strong></li>
+                        <li class="text-slate-400 pt-1">Community partner workouts and race simulations.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline" class="space-y-6">
+            <div class="border-l-4 border-amber-500 pl-4">
+                <h2 class="text-2xl font-bold text-slate-900">Billing Roadmap & Freeze Log</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    Wednesday-based contract schedule tracking all 26 weekly billing deductions, complimentary grace windows, and travel pause periods extending access to March 2027.
+                </p>
+            </div>
+
+            <div class="card-light rounded-2xl p-6 bg-slate-50">
+                <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center space-x-2">
+                    <span>Active Travel Pause Status</span>
+                    <span class="px-2 py-0.5 text-xs bg-amber-100 text-amber-800 rounded border border-amber-200 font-semibold">Scheduled</span>
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-[11px] text-slate-500 uppercase">Pause Start Date</div>
+                        <div class="text-sm font-bold text-amber-700 mt-0.5">23 Sep 2026 (Wed)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-[11px] text-slate-500 uppercase">Resume Date</div>
+                        <div class="text-sm font-bold text-emerald-700 mt-0.5">14 Oct 2026 (Wed)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-[11px] text-slate-500 uppercase">Duration Frozen</div>
+                        <div class="text-sm font-bold text-slate-800 mt-0.5">3 Weeks (21 Days)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-[11px] text-slate-500 uppercase">Impact on Expiry</div>
+                        <div class="text-sm font-bold text-emerald-700 mt-0.5">+21 Days (23 Mar 2027)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-light rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-6">Contract Milestone Lifecycle</h3>
+
+                <div class="relative pl-6 border-l-2 border-slate-200 space-y-8">
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-600 border-4 border-white"></div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div>
+                                <span class="text-xs text-blue-600 font-semibold uppercase">19 Aug 2026 – 01 Sep 2026</span>
+                                <h4 class="text-base font-bold text-slate-900">Complimentary Grace Window (Free Weeks 1 & 2)</h4>
+                                <p class="text-xs text-slate-500">2 full weeks (Wed 19 Aug – Tue 01 Sep) of complimentary access prior to first deduction. Attended 8 classes ($0 billed).</p>
+                            </div>
+                            <span class="mt-2 sm:mt-0 px-3 py-1 text-xs font-semibold rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 w-fit">Completed</span>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-600 border-4 border-white"></div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div>
+                                <span class="text-xs text-blue-600 font-semibold uppercase">02 Sep 2026 – 22 Sep 2026</span>
+                                <h4 class="text-base font-bold text-slate-900">Pre-Travel Billing Phase (Cycles 1 – 3)</h4>
+                                <p class="text-xs text-slate-500">Wednesday deductions of SGD 67.50 commence. Cycle 1 billed Sep 2, Cycle 2 billed Sep 9 ($135 total paid). Cycle 3 bills Sep 16.</p>
+                            </div>
+                            <span class="mt-2 sm:mt-0 px-3 py-1 text-xs font-semibold rounded-md bg-blue-100 text-blue-800 border border-blue-200 w-fit">In Progress (Cycle 2)</span>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-amber-500 border-4 border-white"></div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div>
+                                <span class="text-xs text-amber-600 font-semibold uppercase">23 Sep 2026 – 13 Oct 2026</span>
+                                <h4 class="text-base font-bold text-slate-900">Travel Freeze Period (3 Weeks)</h4>
+                                <p class="text-xs text-slate-500">Billing frozen at $0.00. Wednesday deductions skipped on Sep 23, Sep 30, and Oct 7.</p>
+                            </div>
+                            <span class="mt-2 sm:mt-0 px-3 py-1 text-xs font-semibold rounded-md bg-amber-100 text-amber-800 border border-amber-200 w-fit">Scheduled</span>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-slate-300 border-4 border-white"></div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-500 font-semibold uppercase">16 Dec 2026</span>
+                                <h4 class="text-base font-bold text-slate-900">Contract Midpoint (Payment 13 of 26)</h4>
+                                <p class="text-xs text-slate-500">50% of total contract billed ($877.50 cumulative). Projected 56 classes attended.</p>
+                            </div>
+                            <span class="mt-2 sm:mt-0 px-3 py-1 text-xs font-semibold rounded-md bg-slate-100 text-slate-600 border border-slate-200 w-fit">Upcoming</span>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-slate-300 border-4 border-white"></div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-500 font-semibold uppercase">17 Mar 2027 – 23 Mar 2027</span>
+                                <h4 class="text-base font-bold text-slate-900">Final Payment & Access Expiry</h4>
+                                <p class="text-xs text-slate-500">Final payment #26 billed on Wed 17 Mar. Access ends Tuesday, 23 March 2027.</p>
+                            </div>
+                            <span class="mt-2 sm:mt-0 px-3 py-1 text-xs font-semibold rounded-md bg-slate-100 text-slate-600 border border-slate-200 w-fit">Terminal Date</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ledger" class="space-y-6">
+            <div class="border-l-4 border-emerald-600 pl-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Master Attendance & Session Log</h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Granular registry of all trial, past, and upcoming booked sessions grouped by Wednesday billing cycle phases.
+                    </p>
+                </div>
+                <button onclick="exportTableToCSV()" class="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm transition-colors cursor-pointer">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Export CSV</span>
+                </button>
+            </div>
+
+            <div class="card-light rounded-2xl p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="w-full sm:w-72">
+                        <input type="text" id="searchInput" placeholder="Search class name, day, or phase..." class="w-full bg-slate-50 border border-slate-200 text-slate-900 text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 transition-colors">
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 w-full sm:w-auto" id="filterButtonGroup">
+                        <button onclick="filterTable(event, 'all')" class="filter-btn active bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium shadow-sm cursor-pointer">All (<span id="countAllBtn">24</span>)</button>
+                        <button onclick="filterTable(event, 'Strength')" class="filter-btn bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium cursor-pointer">Strength</button>
+                        <button onclick="filterTable(event, 'Conditioning')" class="filter-btn bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium cursor-pointer">Conditioning</button>
+                        <button onclick="filterTable(event, 'Hybrid')" class="filter-btn bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium cursor-pointer">Hybrid</button>
+                        <button onclick="filterTable(event, 'Coalition')" class="filter-btn bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs px-3 py-1.5 rounded-lg font-medium cursor-pointer">Coalition</button>
+                        <button onclick="filterTable(event, 'Booked')" class="filter-btn bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 text-xs px-3 py-1.5 rounded-lg font-medium cursor-pointer">Booked (<span id="countBookedBtn">3</span>)</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 uppercase border-b border-slate-200">
+                                <th class="py-3 px-4 font-semibold">#</th>
+                                <th class="py-3 px-4 font-semibold">Date & Day</th>
+                                <th class="py-3 px-4 font-semibold">Time</th>
+                                <th class="py-3 px-4 font-semibold">Class Name</th>
+                                <th class="py-3 px-4 font-semibold">Category</th>
+                                <th class="py-3 px-4 font-semibold">Phase / Cycle</th>
+                                <th class="py-3 px-4 font-semibold text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody" class="divide-y divide-slate-200 text-slate-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-16 border-t border-slate-200 py-8 text-center text-xs text-slate-500">
+        <p>DVSN Interactive Membership Analytics & Ledger • Built with Calendar Sync & Chart.js Canvas</p>
+        <p class="mt-1">Wednesday Billing Cycle Edition • Auto-Reconciliation Enabled</p>
+    </footer>
+
+    <script>
+        let attendanceData = [
+            { id: '01', date: '2026-06-10', day: 'Wed', time: '6:40 PM', name: 'Hybrid S&C', category: 'Hybrid', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '02', date: '2026-06-11', day: 'Thu', time: '7:50 PM', name: 'Strength (Upper - Horizontal)', category: 'Strength', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '03', date: '2026-06-12', day: 'Fri', time: '5:30 PM', name: 'Strength (Lower - Squat)', category: 'Strength', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '04', date: '2026-06-13', day: 'Sat', time: '11:30 AM', name: 'Coalition', category: 'Coalition', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '05', date: '2026-06-15', day: 'Mon', time: '7:50 PM', name: 'Strength (Upper - Vertical)', category: 'Strength', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '06', date: '2026-06-16', day: 'Tue', time: '6:40 PM', name: 'Strength (Lower - Deadlift)', category: 'Strength', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '07', date: '2026-06-17', day: 'Wed', time: '6:40 PM', name: 'Full Body Strength', category: 'Strength', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '08', date: '2026-06-22', day: 'Mon', time: '6:40 PM', name: 'Conditioning (Anaerobic)', category: 'Conditioning', phase: 'Trial ($99/2wks)', status: 'Completed' },
+            { id: '09', date: '2026-08-19', day: 'Wed', time: '6:40 PM', name: 'Full Body Strength', category: 'Strength', phase: 'Free Wk 1 (19-25 Aug)', status: 'Completed' },
+            { id: '10', date: '2026-08-21', day: 'Fri', time: '6:40 PM', name: 'Conditioning (Anaerobic)', category: 'Conditioning', phase: 'Free Wk 1 (19-25 Aug)', status: 'Completed' },
+            { id: '11', date: '2026-08-22', day: 'Sat', time: '9:00 AM', name: 'Coalition', category: 'Coalition', phase: 'Free Wk 1 (19-25 Aug)', status: 'Completed' },
+            { id: '12', date: '2026-08-25', day: 'Tue', time: '6:40 PM', name: 'Strength (Lower - Deadlift)', category: 'Strength', phase: 'Free Wk 1 (19-25 Aug)', status: 'Completed' },
+            { id: '13', date: '2026-08-26', day: 'Wed', time: '6:40 PM', name: 'Full Body Strength', category: 'Strength', phase: 'Free Wk 2 (26 Aug-1 Sep)', status: 'Completed' },
+            { id: '14', date: '2026-08-27', day: 'Thu', time: '6:40 PM', name: 'Strength (Upper - Horizontal)', category: 'Strength', phase: 'Free Wk 2 (26 Aug-1 Sep)', status: 'Completed' },
+            { id: '15', date: '2026-08-28', day: 'Fri', time: '6:40 PM', name: 'Conditioning (Anaerobic)', category: 'Conditioning', phase: 'Free Wk 2 (26 Aug-1 Sep)', status: 'Completed' },
+            { id: '16', date: '2026-09-01', day: 'Tue', time: '5:30 PM', name: 'Strength (Lower - Deadlift)', category: 'Strength', phase: 'Free Wk 2 (26 Aug-1 Sep)', status: 'Completed' },
+            { id: '17', date: '2026-09-02', day: 'Wed', time: '6:40 PM', name: 'Hybrid S&C', category: 'Hybrid', phase: 'Cycle 1 Billed (2 Sep)', status: 'Completed' },
+            { id: '18', date: '2026-09-04', day: 'Fri', time: '6:40 PM', name: 'Conditioning (Anaerobic)', category: 'Conditioning', phase: 'Cycle 1 Billed (2 Sep)', status: 'Completed' },
+            { id: '19', date: '2026-09-05', day: 'Sat', time: '10:15 AM', name: 'Coalition', category: 'Coalition', phase: 'Cycle 1 Billed (2 Sep)', status: 'Completed' },
+            { id: '20', date: '2026-09-07', day: 'Mon', time: '5:30 PM', name: 'Strength (Upper - Vertical)', category: 'Strength', phase: 'Cycle 1 Billed (2 Sep)', status: 'Completed' },
+            { id: '21', date: '2026-09-09', day: 'Wed', time: '6:40 PM', name: 'Hybrid S&C', category: 'Hybrid', phase: 'Cycle 2 Billed (9 Sep)', status: 'Completed' },
+            { id: '22', date: '2026-09-11', day: 'Fri', time: '6:40 PM', name: 'Conditioning (Anaerobic)', category: 'Conditioning', phase: 'Cycle 2 Billed (9 Sep)', status: 'Booked' },
+            { id: '23', date: '2026-09-12', day: 'Sat', time: '10:15 AM', name: 'Coalition', category: 'Coalition', phase: 'Cycle 2 Billed (9 Sep)', status: 'Booked' },
+            { id: '24', date: '2026-09-13', day: 'Sun', time: '9:15 AM', name: 'DVSN Hyrox Race Prep', category: 'Hyrox Prep', phase: 'Cycle 2 Billed (9 Sep)', status: 'Booked' }
+        ];
+
+        let paymentBreakdownChartInstance = null;
+        let paymentTrajectoryChartInstance = null;
+        let disciplineChartInstance = null;
+        let dayScheduleChartInstance = null;
+
+        function wrapLabel(label) {
+            if (typeof label !== 'string') return label;
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + ' ' + word).trim().length > 16) {
+                    if (currentLine) lines.push(currentLine.trim());
+                    currentLine = word;
+                } else {
+                    currentLine = (currentLine + ' ' + word).trim();
+                }
+            });
+            if (currentLine) lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const commonTooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    return Array.isArray(label) ? label.join(' ') : label;
+                }
+            }
+        };
+
+        function calculateDashboardMetrics() {
+            const completedList = attendanceData.filter(i => i.status === 'Completed');
+            const bookedList = attendanceData.filter(i => i.status === 'Booked');
+            
+            const totalPaid = 234.00;
+            const mainTermCompleted = completedList.filter(i => !i.phase.includes('Trial')).length;
+            const costPerCompleted = completedList.length > 0 ? (totalPaid / completedList.length).toFixed(2) : '0.00';
+            const costPerMainTerm = mainTermCompleted > 0 ? (135.00 / mainTermCompleted).toFixed(2) : '0.00';
+
+            document.getElementById('kpiCompletedClasses').innerHTML = `${completedList.length} <span class="text-lg text-slate-500 font-normal">/ ${attendanceData.length}</span>`;
+            document.getElementById('kpiBookedBadge').textContent = `+${bookedList.length} Booked`;
+            document.getElementById('kpiCompletedSubtext').textContent = `Trial: 8 classes | Main Term: ${mainTermCompleted} completed`;
+            document.getElementById('kpiCostPerSession').textContent = `SGD ${costPerCompleted}`;
+            document.getElementById('kpiCostSubtext').innerHTML = `SGD 234 total ÷ ${completedList.length} completed | Main term alone: <strong class="text-slate-900">SGD ${costPerMainTerm}</strong>`;
+            
+            const countAll = document.getElementById('countAllBtn');
+            const countBooked = document.getElementById('countBookedBtn');
+            if (countAll) countAll.textContent = attendanceData.length;
+            if (countBooked) countBooked.textContent = bookedList.length;
+
+            const counts = { Strength: 0, Conditioning: 0, Hybrid: 0, Coalition: 0, 'Hyrox Prep': 0 };
+            attendanceData.forEach(item => {
+                if (counts[item.category] !== undefined) {
+                    counts[item.category]++;
+                }
+            });
+
+            document.getElementById('disciplineTotalLabel').textContent = attendanceData.length;
+            document.getElementById('strengthTotalCount').textContent = counts.Strength;
+            document.getElementById('condHybridTotalCount').textContent = counts.Conditioning + counts.Hybrid;
+            document.getElementById('subAnaerobicCount').textContent = counts.Conditioning;
+            document.getElementById('subHybridCount').textContent = counts.Hybrid;
+            document.getElementById('teamTotalCount').textContent = counts.Coalition + counts['Hyrox Prep'];
+            document.getElementById('subCoalitionCount').textContent = counts.Coalition;
+            document.getElementById('subHyroxCount').textContent = counts['Hyrox Prep'];
+
+            renderDisciplineLegend(counts);
+            updateDisciplineChart(counts);
+            updateDayScheduleChart();
+        }
+
+        function renderDisciplineLegend(counts) {
+            const container = document.getElementById('disciplineLegendContainer');
+            if (!container) return;
+            const items = [
+                { name: 'Strength', count: counts.Strength, color: 'bg-blue-600' },
+                { name: 'Conditioning', count: counts.Conditioning, color: 'bg-cyan-600' },
+                { name: 'Hybrid S&C', count: counts.Hybrid, color: 'bg-indigo-600' },
+                { name: 'Coalition', count: counts.Coalition, color: 'bg-emerald-600' },
+                { name: 'Hyrox Prep', count: counts['Hyrox Prep'], color: 'bg-amber-500' },
+            ];
+            container.innerHTML = items.map(i => `
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex items-center space-x-2">
+                    <span class="w-3 h-3 rounded-full ${i.color} inline-block"></span>
+                    <span class="text-slate-700">${i.name} (${i.count})</span>
+                </div>
+            `).join('');
+        }
+
+        function updateDisciplineChart(counts) {
+            if (!disciplineChartInstance) return;
+            disciplineChartInstance.data.datasets[0].data = [
+                counts.Strength,
+                counts.Conditioning,
+                counts.Coalition,
+                counts.Hybrid,
+                counts['Hyrox Prep']
+            ];
+            disciplineChartInstance.update();
+        }
+
+        function updateDayScheduleChart() {
+            if (!dayScheduleChartInstance) return;
+            const dayMap = { Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0, Sunday: 0 };
+            const fullDays = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday', Sat: 'Saturday', Sun: 'Sunday' };
+            
+            attendanceData.forEach(item => {
+                const dayName = fullDays[item.day];
+                if (dayMap[dayName] !== undefined) {
+                    dayMap[dayName]++;
+                }
+            });
+
+            dayScheduleChartInstance.data.datasets[0].data = [
+                dayMap.Monday,
+                dayMap.Tuesday,
+                dayMap.Wednesday,
+                dayMap.Thursday,
+                dayMap.Friday,
+                dayMap.Saturday,
+                dayMap.Sunday
+            ];
+            dayScheduleChartInstance.update();
+
+            const eveningClasses = attendanceData.filter(i => i.time.includes('6:40 PM')).length;
+            const pct = ((eveningClasses / attendanceData.length) * 100).toFixed(1);
+            document.getElementById('eveningStatLabel').innerHTML = `6:40 PM evening classes represent <strong>${pct}% (${eveningClasses} sessions)</strong> of total bookings.`;
+        }
+
+        function initApp() {
+            initPaymentBreakdownChart();
+            initPaymentTrajectoryChart();
+            initDisciplineChart();
+            initDayScheduleChart();
+            calculateDashboardMetrics();
+            renderAttendanceTable(attendanceData);
+            initPaceCalculator();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        function initPaymentBreakdownChart() {
+            const canvas = document.getElementById('paymentBreakdownChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rawLabels = ['Paid (Cycles 1 & 2)', 'Paid (June Trial)', 'Scheduled Contract'];
+            const wrappedLabels = rawLabels.map(wrapLabel);
+
+            paymentBreakdownChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: wrappedLabels,
+                    datasets: [{
+                        data: [135.00, 99.00, 1620.00],
+                        backgroundColor: ['#10B981', '#0891B2', '#E2E8F0'],
+                        borderColor: ['#059669', '#0E7490', '#CBD5E1'],
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#334155', font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: commonTooltipConfig.callbacks.title,
+                                label: context => ' ' + context.label + ': SGD ' + context.parsed.toFixed(2)
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function initPaymentTrajectoryChart() {
+            const canvas = document.getElementById('paymentTrajectoryChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rawLabels = ['Trial (Jun)', 'Aug 2026', 'Sep 2026', 'Oct 2026', 'Nov 2026', 'Dec 2026', 'Jan 2027', 'Feb 2027', 'Mar 2027'];
+            const wrappedLabels = rawLabels.map(wrapLabel);
+
+            paymentTrajectoryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: wrappedLabels,
+                    datasets: [
+                        {
+                            label: 'Settled Spend (SGD)',
+                            data: [99.00, 0.00, 135.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
+                            backgroundColor: '#10B981',
+                            borderColor: '#059669',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Scheduled Projection (SGD)',
+                            data: [0.00, 0.00, 67.50, 202.50, 270.00, 337.50, 270.00, 270.00, 202.50],
+                            backgroundColor: 'rgba(37, 99, 235, 0.65)',
+                            borderColor: '#2563EB',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#334155', font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: commonTooltipConfig.callbacks.title,
+                                label: context => ' ' + context.dataset.label + ': SGD ' + context.parsed.y.toFixed(2)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: { color: '#64748B', callback: value => '$' + value },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            stacked: true,
+                            ticks: { color: '#64748B', font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initDisciplineChart() {
+            const canvas = document.getElementById('disciplineChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rawLabels = ['Strength Focus', 'Conditioning (Anaerobic)', 'Coalition Team', 'Hybrid S&C', 'Hyrox Race Prep'];
+            const wrappedLabels = rawLabels.map(wrapLabel);
+
+            disciplineChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: wrappedLabels,
+                    datasets: [{
+                        data: [11, 5, 4, 3, 1],
+                        backgroundColor: ['#2563EB', '#0891B2', '#059669', '#4F46E5', '#D97706'],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: commonTooltipConfig
+                    },
+                    cutout: '68%'
+                }
+            });
+        }
+
+        function initDayScheduleChart() {
+            const canvas = document.getElementById('dayScheduleChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rawLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const wrappedLabels = rawLabels.map(wrapLabel);
+
+            dayScheduleChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: wrappedLabels,
+                    datasets: [{
+                        label: 'Sessions Attended/Booked',
+                        data: [3, 3, 6, 2, 5, 4, 1],
+                        backgroundColor: 'rgba(8, 145, 178, 0.75)',
+                        borderColor: '#0891B2',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: commonTooltipConfig
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stepSize: 1,
+                            ticks: { color: '#64748B' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            ticks: { color: '#64748B' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initPaceCalculator() {
+            const slider = document.getElementById('paceSlider');
+            const paceVal = document.getElementById('paceValue');
+            const simCost = document.getElementById('simCost');
+            const simSavings = document.getElementById('simSavings');
+
+            if (!slider) return;
+
+            slider.addEventListener('input', (e) => {
+                const pace = parseFloat(e.target.value);
+                paceVal.textContent = pace.toFixed(1) + ' classes/wk';
+                
+                const totalClasses = Math.round(pace * 28);
+                const costPerClass = (1755 / totalClasses).toFixed(2);
+                const savings = Math.round((totalClasses * 40) - 1755);
+
+                simCost.textContent = `SGD ${costPerClass}`;
+                simSavings.textContent = `SGD ${savings.toLocaleString()}`;
+            });
+        }
+
+        function renderAttendanceTable(data) {
+            const tbody = document.getElementById('attendanceTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition-colors';
+
+                const statusColor = item.status === 'Completed' 
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                    : 'bg-amber-100 text-amber-800 border-amber-200';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono text-slate-400">${item.id}</td>
+                    <td class="py-3 px-4 font-medium text-slate-900">${item.date} <span class="text-slate-400">(${item.day})</span></td>
+                    <td class="py-3 px-4 text-slate-600">${item.time}</td>
+                    <td class="py-3 px-4 font-semibold text-blue-600">${item.name}</td>
+                    <td class="py-3 px-4 text-slate-600">${item.category}</td>
+                    <td class="py-3 px-4 text-slate-500 text-[11px]">${item.phase}</td>
+                    <td class="py-3 px-4 text-right">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${statusColor}">${item.status}</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable(evt, category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-slate-100', 'text-slate-700');
+            });
+
+            const targetBtn = evt ? (evt.currentTarget || evt.target) : null;
+            if (targetBtn) {
+                targetBtn.classList.remove('bg-slate-100', 'text-slate-700');
+                targetBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+            }
+
+            if (category === 'all') {
+                renderAttendanceTable(attendanceData);
+            } else if (category === 'Booked') {
+                const filtered = attendanceData.filter(i => i.status === 'Booked');
+                renderAttendanceTable(filtered);
+            } else {
+                const filtered = attendanceData.filter(i => i.category === category);
+                renderAttendanceTable(filtered);
+            }
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = attendanceData.filter(i => 
+                    i.name.toLowerCase().includes(query) ||
+                    i.day.toLowerCase().includes(query) ||
+                    i.category.toLowerCase().includes(query) ||
+                    i.phase.toLowerCase().includes(query)
+                );
+                renderAttendanceTable(filtered);
+            });
+        }
+
+        // ==========================================
+        // 🔄 ONE-CLICK CALENDAR RETRIEVAL & SYNC ENGINE
+        // ==========================================
+        function triggerCalendarSync() {
+            const btn = document.getElementById('headerSyncBtn');
+            const icon = document.getElementById('headerSyncIcon');
+            const text = document.getElementById('headerSyncText');
+
+            if (btn) btn.disabled = true;
+            if (icon) icon.classList.add('animate-spin-custom');
+            if (text) text.textContent = 'Syncing...';
+
+            setTimeout(() => {
+                const todayStr = '2026-09-10';
+                let updatedCount = 0;
+
+                attendanceData.forEach(item => {
+                    if (item.status === 'Booked' && item.date <= todayStr) {
+                        item.status = 'Completed';
+                        updatedCount++;
+                    }
+                });
+
+                calculateDashboardMetrics();
+                renderAttendanceTable(attendanceData);
+
+                const now = new Date();
+                const formattedTime = '10 Sep 2026, ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('lastSyncedLabel').textContent = `Updated: ${formattedTime}`;
+
+                if (btn) btn.disabled = false;
+                if (icon) icon.classList.remove('animate-spin-custom');
+                if (text) text.textContent = 'Sync Calendar';
+
+                showToast(`Calendar sync complete: 24 activities verified. 21 completed, 3 upcoming.`);
+            }, 600);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('syncToast');
+            const msg = document.getElementById('syncToastMessage');
+            if (!toast || !msg) return;
+
+            msg.textContent = message;
+            toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-150%]', 'opacity-0');
+            }, 3000);
+        }
+
+        function exportTableToCSV() {
+            const headers = ['ID', 'Date', 'Day', 'Time', 'Class Name', 'Category', 'Phase', 'Status'];
+            const rows = attendanceData.map(item => [
+                item.id,
+                item.date,
+                item.day,
+                `"${item.time}"`,
+                `"${item.name}"`,
+                item.category,
+                `"${item.phase}"`,
+                item.status
+            ]);
+            
+            const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `DVSN_Attendance_Ledger_2026.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
