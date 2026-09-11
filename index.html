@@ -53,9 +53,55 @@
         .animate-spin-custom {
             animation: spin 0.8s linear infinite;
         }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-shake {
+            animation: shake 0.35s ease-in-out;
+        }
     </style>
 </head>
-<body class="antialiased min-h-screen pb-16 bg-slate-50 text-slate-900">
+<body class="antialiased min-h-screen pb-16 bg-slate-50 text-slate-900 overflow-hidden">
+
+    <!-- 🔒 SECURITY ACCESS GATE MODAL -->
+    <div id="accessGate" class="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 transition-opacity duration-300">
+        <div id="gateCard" class="bg-slate-900 border border-slate-800 text-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-6">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            
+            <div>
+                <h2 class="text-xl font-extrabold tracking-wider">DVSN <span class="text-blue-500">ANALYTICS</span></h2>
+                <p class="text-slate-400 text-xs mt-1.5">This dashboard is private. Please enter your 4-digit PIN to gain access.</p>
+            </div>
+
+            <div class="space-y-3">
+                <input 
+                    type="password" 
+                    id="gatePinInput" 
+                    inputmode="numeric" 
+                    maxlength="4" 
+                    placeholder="••••" 
+                    autofocus
+                    onkeydown="if(event.key==='Enter') unlockGate()"
+                    class="w-full text-center text-2xl tracking-[0.5em] font-mono bg-slate-950 border border-slate-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-600 placeholder:tracking-normal"
+                >
+                <div id="gateError" class="hidden text-xs font-semibold text-rose-400">
+                    Incorrect code. Please try again.
+                </div>
+            </div>
+
+            <button 
+                onclick="unlockGate()" 
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer uppercase tracking-wider">
+                Unlock Tracker
+            </button>
+        </div>
+    </div>
 
     <!-- Floating Toast Notification -->
     <div id="syncToast" class="fixed top-20 right-6 z-50 transform translate-y-[-150%] opacity-0 transition-all duration-300 ease-out bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700">
@@ -114,7 +160,6 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                        <!-- Hero Section Sync Button -->
                         <button onclick="triggerCalendarSync()" class="inline-flex items-center space-x-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer">
                             <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -531,6 +576,28 @@
     </footer>
 
     <script>
+        // ==========================================
+        // 🔒 PASSCODE GATEWAY CONTROLLER
+        // ==========================================
+        function unlockGate() {
+            const input = document.getElementById('gatePinInput');
+            const error = document.getElementById('gateError');
+            const card = document.getElementById('gateCard');
+            const gate = document.getElementById('accessGate');
+
+            if (input.value === '8888') {
+                gate.classList.add('opacity-0', 'pointer-events-none');
+                document.body.classList.remove('overflow-hidden');
+                setTimeout(() => gate.remove(), 320);
+            } else {
+                error.classList.remove('hidden');
+                card.classList.add('animate-shake');
+                input.value = '';
+                input.focus();
+                setTimeout(() => card.classList.remove('animate-shake'), 400);
+            }
+        }
+
         let attendanceData = [
             { id: '01', date: '2026-06-10', day: 'Wed', time: '6:40 PM', name: 'Hybrid S&C', category: 'Hybrid', phase: 'Trial ($99/2wks)', status: 'Completed' },
             { id: '02', date: '2026-06-11', day: 'Thu', time: '7:50 PM', name: 'Strength (Upper - Horizontal)', category: 'Strength', phase: 'Trial ($99/2wks)', status: 'Completed' },
@@ -959,9 +1026,6 @@
             });
         }
 
-        // ==========================================
-        // 🔄 ONE-CLICK CALENDAR RETRIEVAL & SYNC ENGINE
-        // ==========================================
         function triggerCalendarSync() {
             const btn = document.getElementById('headerSyncBtn');
             const icon = document.getElementById('headerSyncIcon');
